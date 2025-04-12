@@ -2,174 +2,120 @@ namespace N10__YP__Task_2_10._04._2025
 {
     public partial class Form1 : Form
     {
+        private float a = 0, b = 0;
+        private int count = 0;
+
+        // Словарь операций
+        private Dictionary<int, Func<float, float, float>> operations = new()
+        {
+            { 1, (x, y) => x + y }, // Сложение
+            { 2, (x, y) => x - y }, // Вычитание
+            { 3, (x, y) => x * y }, // Умножение
+            { 4, (x, y) => x / y }  // Деление
+        };
+
         public Form1()
         {
             InitializeComponent();
-        }
 
-        float a, b;
-        int count;
-        bool znak = true;
-
-        private void button17_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 0;
-        }
-
-        private void button18_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + ",";
-        }
-
-        private void button13_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 1;
-        }
-
-        private void button14_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 2;
-        }
-
-        private void button15_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 3;
-        }
-
-        private void button9_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 4;
-        }
-
-        private void button10_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 5;
-        }
-
-        private void button11_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 6;
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 7;
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 8;
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = textBox1.Text + 9;
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (znak == true)
+            // Присвоение обработчиков для кнопок с числами
+            foreach (var button in new[] { button13, button14, button15, button9,
+                                         button10, button11, button5, button6,
+                                         button7, button17 })
             {
-                textBox1.Text = "-" + textBox1.Text;
-                znak = false;
-            }
-            else if (znak == false)
-            {
-                textBox1.Text = textBox1.Text.Replace("-", "");
-                znak = true;
+                button.Click += (s, e) => textBox1.Text += ((Button)s).Text;
             }
 
+            // Присвоение обработчиков для операций
+            button4.Click += OperationButton_Click; // "+"
+            button8.Click += OperationButton_Click; // "-"
+            button12.Click += OperationButton_Click; // "*"
+            button16.Click += OperationButton_Click; // "/"
+
+            // Прочие обработчики
+            button1.Click += (s, e) => ToggleSign(); // "+/-"
+            button2.Click += (s, e) => Backspace(); // "<--"
+            button3.Click += (s, e) => Clear();     // "C"
+            button18.Click += (s, e) => AddDecimalPoint(); // "."
+            button19.Click += (s, e) => CalculateResult(); // "="
         }
 
-        private void calculate()
+        // Обработчик для кнопок операций
+        private void OperationButton_Click(object sender, EventArgs e)
         {
-
-            switch (count)
+            if (sender is Button button)
             {
-                case 1:
-                    b = a + float.Parse(textBox1.Text);
-                    textBox1.Text = b.ToString();
-                    break;
-
-                case 2:
-                    b = a - float.Parse(textBox1.Text);
-                    textBox1.Text = b.ToString();
-                    break;
-                case 3:
-                    b = a * float.Parse(textBox1.Text);
-                    textBox1.Text = b.ToString();
-                    break;
-                case 4:
-                    b = a / float.Parse(textBox1.Text);
-                    textBox1.Text = b.ToString();
-                    break;
-
-                default:
-                    break;
+                a = float.Parse(textBox1.Text);
+                textBox1.Clear();
+                count = GetOperationId(button.Text); // Получаем ID операции
+                label1.Text = a.ToString() + button.Text;
             }
-
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        // Получение ID операции по символу
+        private int GetOperationId(string operation)
         {
-            a = float.Parse(textBox1.Text);
-            textBox1.Clear();
-            count = 1;
-            label1.Text = a.ToString() + "+";
-            znak = true;
-
+            return operation switch
+            {
+                "+" => 1,
+                "-" => 2,
+                "*" => 3,
+                "/" => 4,
+                _ => 0
+            };
         }
 
-        private void button8_Click(object sender, EventArgs e)
+        // Выполнение операции
+        private void PerformOperation(int operationId)
         {
-            a = float.Parse(textBox1.Text);
-            textBox1.Clear();
-            count = 2;
-            label1.Text = a.ToString() + "-";
-            znak = true;
+            if (operations.TryGetValue(operationId, out var operation))
+            {
+                b = operation(a, float.Parse(textBox1.Text));
+                textBox1.Text = b.ToString();
+            }
         }
 
-        private void button12_Click(object sender, EventArgs e)
+        // Расчет результата
+        private void CalculateResult()
         {
-            a = float.Parse(textBox1.Text);
-            textBox1.Clear();
-            count = 3;
-            label1.Text = a.ToString() + "*";
-            znak = true;
-        }
-
-        private void button16_Click(object sender, EventArgs e)
-        {
-            a = float.Parse(textBox1.Text);
-            textBox1.Clear();
-            count = 4;
-            label1.Text = a.ToString() + "/";
-            znak = true;
-        }
-
-        private void button19_Click(object sender, EventArgs e)
-        {
-            calculate();
+            PerformOperation(count);
             label1.Text = "";
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        // Переключение знака числа
+        private void ToggleSign()
+        {
+            textBox1.Text = textBox1.Text.StartsWith("-")
+                ? textBox1.Text[1..]
+                : $"-{textBox1.Text}";
+        }
+
+        // Очистка поля ввода
+        private void Clear()
         {
             textBox1.Text = "";
             label1.Text = "";
+            a = 0;
+            b = 0;
+            count = 0;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        // Удаление последнего символа
+        private void Backspace()
         {
-            int lenght = textBox1.Text.Length - 1;
-            string text = textBox1.Text;
-            textBox1.Clear();
-            for (int i = 0; i < lenght; i++)
+            if (!string.IsNullOrEmpty(textBox1.Text))
             {
-                textBox1.Text = textBox1.Text + text[i];
+                textBox1.Text = textBox1.Text[..^1];
             }
         }
 
-
+        // Добавление десятичной точки
+        private void AddDecimalPoint()
+        {
+            if (!textBox1.Text.Contains(",") && !textBox1.Text.Contains("."))
+            {
+                textBox1.Text += ",";
+            }
+        }
     }
 }
